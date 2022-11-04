@@ -1,11 +1,9 @@
 import json
 import logging
-import os
 
-LOG_JSON_INDENT = os.getenv('LOG_JSON_INDENT') or None
-LOG_LEVEL = os.getenv('LOG_LEVEL') or logging.INFO
-LOG_FORMAT = os.getenv('LOG_FORMAT') \
-    or '%(levelname)s %(awsRequestId)s %(message)s'
+LOG_FORMAT = "%(levelname)s %(awsRequestId)s %(message)s"
+LOG_LEVEL = logging.INFO
+LOG_NAME = "slackbot"
 
 
 class SuppressFilter(logging.Filter):
@@ -14,6 +12,7 @@ class SuppressFilter(logging.Filter):
 
     Taken from ``aws_lambda_powertools.logging.filters.SuppressFilter``
     """
+
     def __init__(self, logger):
         self.logger = logger
 
@@ -26,6 +25,7 @@ class LambdaLoggerAdapter(logging.LoggerAdapter):
     """
     Lambda logger adapter.
     """
+
     @staticmethod
     def getLogger(name, level=None, format_string=None, stream=None):
         # Get logger, handler, formatter
@@ -49,7 +49,7 @@ class LambdaLoggerAdapter(logging.LoggerAdapter):
         return logger
 
     def __init__(self, logger, extra=None):
-        super().__init__(logger, extra or dict(awsRequestId='-'))
+        super().__init__(logger, extra or dict(awsRequestId="-"))
 
     def bind(self, handler):
         """
@@ -69,15 +69,18 @@ class LambdaLoggerAdapter(logging.LoggerAdapter):
         >>> # => INFO RequestId: {awsRequestId} Hello, world!
         >>> # => INFO RequestId: {awsRequestId} RETURN {"ok": True}
         """
+
         def wrapper(event=None, context=None):
             try:
+                params = {"default": str}
                 self.addContext(context)
-                self.info('EVENT %s', self.json(event))
+                self.info("EVENT %s", json.dumps(event, **params))
                 result = handler(event, context)
-                self.info('RETURN %s', self.json(result))
+                self.info("RETURN %s", json.dumps(result, **params))
                 return result
             finally:
                 self.dropContext()
+
         return wrapper
 
     def addContext(self, context=None):
@@ -85,9 +88,9 @@ class LambdaLoggerAdapter(logging.LoggerAdapter):
         Add runtime context to logger.
         """
         try:
-            awsRequestId = f'RequestId: { context.aws_request_id }'
+            awsRequestId = f"RequestId: {context.aws_request_id}"
         except AttributeError:
-            awsRequestId = '-'
+            awsRequestId = "-"
         self.extra.update(awsRequestId=awsRequestId)
         return self
 
@@ -95,17 +98,8 @@ class LambdaLoggerAdapter(logging.LoggerAdapter):
         """
         Drop runtime context from logger.
         """
-        self.extra.update(awsRequestId='-')
+        self.extra.update(awsRequestId="-")
         return self
-
-    def json(self, obj, **params):
-        """
-        Helper to convert object to JSON.
-        """
-        params.setdefault('default', str)
-        if LOG_JSON_INDENT:
-            params.update(indent=int(LOG_JSON_INDENT))
-        return json.dumps(obj, **params)
 
 
 def getLogger(name, level=None, format_string=None, stream=None):
@@ -120,4 +114,4 @@ def getLogger(name, level=None, format_string=None, stream=None):
     return LambdaLoggerAdapter(logger)
 
 
-logger = getLogger(__name__)
+logger = getLogger(LOG_NAME)

@@ -1,26 +1,24 @@
-REPO := amancevice/$(shell basename $$PWD)
-
-ENDPOINT = http://$$(REPO=$(REPO) docker-compose port lambda 8080)/2015-03-31/functions/function/invocations
-
 all: test validate
 
 clean:
-	rm -rf .terraform
+	make -C functions/default $@
+	make -C functions/edge $@
 
-clobber: clean
-	rm -rf .terraform.lock.hcl
+ipython:
+	make -C functions/edge $@
+
+logs:
+	make -C example $@
 
 test:
-	pipenv run pytest
+	make -C functions/default $@
+	make -C functions/edge $@
 
-up:
-	pipenv run lambda-gateway -p 3000 src.index.proxy
-
-validate: | .terraform
+validate:
 	terraform fmt -check
-	AWS_REGION=us-east-1 terraform validate
+	make -C example $@
 
-.PHONY: all clean clobber test up validate
+apply:
+	make -C example $@
 
-.terraform:
-	terraform init
+.PHONY: all clean ipython logs test validate apply

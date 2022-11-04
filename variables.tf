@@ -1,195 +1,160 @@
-variable "base_path" {
-  description = "Slack API base path"
-  default     = "/"
+###########
+#   API   #
+###########
+
+variable "api_description" {
+  type        = string
+  description = "Slack API description"
+  default     = "Slack API"
 }
 
-variable "event_bus_arn" {
-  description = "EventBridge bus ARN"
-  default     = null
+variable "api_name" {
+  type        = string
+  description = "Slack API name"
 }
 
-variable "event_post_rule_description" {
-  description = "Post Lambda EventBridge rule name"
-  default     = "Capture events destined for post Lambda"
+variable "api_integration_description" {
+  type        = string
+  description = "Slack API default integration description"
+  default     = "Slack API default integration"
 }
 
-variable "event_post_rule_name" {
-  description = "Post Lambda EventBridge rule name"
-  default     = "slack-post"
+variable "api_stage_description" {
+  type        = string
+  description = "Slack API default stage description"
+  default     = "Slack API default stage"
 }
 
-variable "event_source" {
-  description = "EventBridge source"
-  default     = "slack"
+variable "api_sync_handlers" {
+  type        = map(string)
+  description = "Optional route key => Lambda invocation ARN mappings"
+  default     = {}
 }
 
-variable "http_api_execution_arn" {
-  description = "API Gateway v2 HTTP API execution ARN"
+######################
+#   DEFAULT LAMBDA   #
+######################
+
+variable "default_function_description" {
+  type        = string
+  description = "Default Slack handler function description"
+  default     = "Default Slack handler"
 }
 
-variable "http_api_id" {
-  description = "API Gateway v2 HTTP API ID"
+variable "default_function_logs_retention_in_days" {
+  type        = number
+  description = "Default Slack handler function log retention in days"
+  default     = 14
 }
 
-variable "http_api_integration_description" {
-  description = "API Gateway v2 HTTP API integration description"
-  default     = "Slack request Lambda integration"
+variable "default_function_name" {
+  type        = string
+  description = "Default Slack handler function name"
 }
 
-variable "kms_key_alias" {
-  description = "KMS Key alias"
-  default     = null
+###################
+#   EDGE LAMBDA   #
+###################
+
+variable "edge_function_description" {
+  type        = string
+  description = "CloudFront@Edge Slack handler function description"
+  default     = "CloudFront@Edge Slack handler"
 }
 
-variable "kms_key_deletion_window_in_days" {
-  description = "KMS Key deletion window"
-  default     = 30
+variable "edge_function_name" {
+  type        = string
+  description = "CloudFront@Edge Slack handler function name"
 }
 
-variable "kms_key_enable_key_rotation" {
-  description = "KMS Key rotation flag"
-  default     = false
+variable "event_bus_name" {
+  type        = string
+  description = "EventBridge bus name"
 }
 
-variable "kms_key_is_enabled" {
-  description = "KMS Key enabled flag"
+##################
+#   CLOUDFRONT   #
+##################
+
+variable "distribution_aliases" {
+  type        = list(string)
+  description = "CloudFront distribution aliases"
+  default     = []
+}
+
+variable "distribution_description" {
+  type        = string
+  description = "CloudFront distribution description"
+  default     = "Slackbot API"
+}
+
+variable "distribution_enabled" {
+  type        = bool
+  description = "CloudFront distribution enabled switch"
   default     = true
 }
 
-variable "kms_key_description" {
-  description = "KMS Key description"
-  default     = "Slackbot key"
+variable "distribution_http_version" {
+  type        = string
+  description = "CloudFront distribution HTTP version option"
+  default     = "http2and3"
 }
 
-variable "kms_key_policy_document" {
-  description = "KMS Key policy JSON document"
-  default     = null
-}
-
-variable "kms_key_tags" {
-  description = "KMS Key resource tags"
-  type        = map(string)
-  default     = {}
-}
-
-variable "kms_key_usage" {
-  description = "KMS Key usage"
-  default     = "ENCRYPT_DECRYPT"
-}
-
-variable "lambda_tags" {
-  description = "Lambda function resource tags"
-  type        = map(string)
-  default     = {}
-}
-
-variable "lambda_post_description" {
-  description = "Lambda function description"
-  default     = "Slack API handler"
-}
-
-variable "lambda_post_function_name" {
-  description = "Lambda function name prefix"
-}
-
-variable "lambda_post_publish" {
-  description = "Lambda publish flag"
-  default     = false
+variable "distribution_is_ipv6_enabled" {
   type        = bool
+  description = "CloudFront distribution IPv6 switch"
+  default     = true
 }
 
-variable "lambda_post_memory_size" {
-  description = "Lambda function memory size"
-  default     = 1024
+variable "distribution_logging_configurations" {
+  type = list(object({
+    bucket          = optional(string)
+    prefix          = optional(string)
+    include_cookies = optional(bool)
+  }))
+  description = "CloudFront distribution logging configurations"
+  default     = []
 }
 
-variable "lambda_post_runtime" {
-  description = "Lambda function runtime"
-  default     = "python3.9"
+variable "distribution_price_class" {
+  type        = string
+  description = "CloudFront distribution price class"
+  default     = "PriceClass_All"
 }
 
-variable "lambda_post_timeout" {
-  description = "Lambda function timeout in seconds"
-  default     = 3
+variable "distribution_viewer_certificate" {
+  type = object({
+    acm_certificate_arn            = optional(string)
+    cloudfront_default_certificate = optional(bool)
+    iam_certificate_id             = optional(string)
+    minimum_protocol_version       = optional(string)
+    ssl_support_method             = optional(string)
+  })
+  description = "CloudFront distribution viewer certificate configuration"
+  default     = { cloudfront_default_certificate = true }
 }
 
-variable "lambda_proxy_description" {
-  description = "Lambda function description"
-  default     = "Slack request handler"
+############
+#   LOGS   #
+############
+
+variable "log_retention_in_days" {
+  type        = number
+  description = "Slack API log retention in days"
+  default     = 14
 }
 
-variable "lambda_proxy_function_name" {
-  description = "Lambda function name prefix"
-}
+##############
+#   SECRET   #
+##############
 
-variable "lambda_proxy_publish" {
-  description = "Lambda publish flag"
-  default     = false
-  type        = bool
-}
-
-variable "lambda_proxy_memory_size" {
-  description = "Lambda function memory size"
-  default     = 1024
-}
-
-variable "lambda_proxy_runtime" {
-  description = "Lambda function runtime"
-  default     = "python3.9"
-}
-
-variable "lambda_proxy_timeout" {
-  description = "Lambda function timeout in seconds"
-  default     = 3
-}
-
-variable "log_group_retention_in_days" {
-  description = "CloudWatch log group retention in days"
-  default     = null
-}
-
-variable "log_group_tags" {
-  description = "CloudWatch log group resource tags"
-  type        = map(string)
-  default     = {}
-}
-
-variable "log_json_indent" {
-  description = "Indent for JSON logger"
-  default     = null
-}
-
-variable "role_description" {
-  description = "Lambda role description"
-  default     = "Slackbot resource access"
-}
-
-variable "role_name" {
-  description = "Lambda role name"
-}
-
-variable "role_path" {
-  description = "Lambda role path"
-  default     = null
-}
-
-variable "role_tags" {
-  description = "Lambda role resource tags"
-  type        = map(string)
-  default     = {}
-}
-
-variable "secret_description" {
-  description = "SecretsManager Secret description"
-  default     = "Slackbot secrets"
+variable "secret_hash" {
+  type        = string
+  description = "SecretsManager secret hash (to trigger redeployment)"
+  default     = ""
 }
 
 variable "secret_name" {
+  type        = string
   description = "SecretsManager secret name"
-}
-
-variable "secret_tags" {
-  description = "SecretsManager Secret resource tags"
-  type        = map(string)
-  default     = {}
 }
