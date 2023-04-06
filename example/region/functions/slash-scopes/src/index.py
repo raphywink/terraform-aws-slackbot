@@ -9,7 +9,7 @@ from logger import logger
 @logger.bind
 def handler(event, _):
     if event.get("isBase64Encoded"):
-        body = json.loads(base64.b64decode(body).decode())
+        body = json.loads(base64.b64decode(event["body"]).decode())
     else:
         body = json.loads(event["body"])
     url = body["response_url"]
